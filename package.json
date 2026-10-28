@@ -1,0 +1,13 @@
+{
+  "name": "clothing-shopping-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Rack: an AI stylist chat that recommends clothing and earns affiliate commission on purchases.",
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
