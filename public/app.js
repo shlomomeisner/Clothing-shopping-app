@@ -1,114 +1,117 @@
 const feed = document.getElementById("feed");
-const hero = document.getElementById("hero");
-const form = document.getElementById("composer");
-const input = document.getElementById("input");
-const send = document.getElementById("send");
+const tabs = document.getElementById("tabs");
 
-let history = [];
-let busy = false;
+let posts = [];
+let filter = "all";
+let hearts = new Set();
+try { hearts = new Set(JSON.parse(localStorage.getItem("hearts") || "[]")); } catch {}
 
-document.getElementById("chips").addEventListener("click", (e) => {
-  if (e.target.tagName === "BUTTON") ask(e.target.textContent);
-});
-document.getElementById("reset").addEventListener("click", () => {
-  history = [];
-  feed.querySelectorAll(".msg").forEach((n) => n.remove());
-  hero.hidden = false;
-  input.focus();
-});
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  ask(input.value);
+tabs.addEventListener("click", (e) => {
+  const b = e.target.closest("button");
+  if (!b) return;
+  tabs.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+  filter = b.dataset.type;
+  render();
 });
 
-async function ask(text) {
-  text = text.trim();
-  if (!text || busy) return;
-  busy = true;
-  send.disabled = true;
-  input.value = "";
-  hero.hidden = true;
+load();
 
-  history.push({ role: "user", content: text });
-  add(el("div", "msg user", text));
-  const loading = add(loadingNode());
-
+async function load() {
   try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ messages: history }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Something went wrong");
-
-    // Keep the picks in history so follow-ups ("cheaper", "in black") have context.
-    const summary = data.picks.map((p) => `${p.name} (${p.retailerName}, ${p.price})`).join("; ");
-    history.push({ role: "assistant", content: `${data.message}\nPicks: ${summary}` });
-
-    loading.replaceWith(botNode(data));
-  } catch (err) {
-    history.pop();
-    const n = el("div", "msg bot err");
-    n.append(el("p", "text", err.message));
-    loading.replaceWith(n);
-  } finally {
-    busy = false;
-    send.disabled = false;
-    input.focus();
-    scrollDown();
+    const res = await fetch("/api/posts");
+    posts = (await res.json()).posts || [];
+  } catch {
+    posts = [];
   }
+  render();
 }
 
-function botNode({ message, picks }) {
-  const n = el("div", "msg bot");
-  n.append(el("p", "text", message));
-  if (picks.length) {
-    const rail = el("div", "rail");
-    picks.forEach((p, i) => rail.append(card(p, i)));
-    n.append(rail);
+function render() {
+  const list = posts.filter((p) => filter === "all" || p.type === filter);
+  feed.replaceChildren();
+
+  if (!list.length) {
+    const e = el("div", "empty");
+    e.append(el("b", "", "nothing here yet ♡"), document.createTextNode("New drops are coming, check back soon."));
+    feed.append(e);
+    return;
   }
-  return n;
+  list.forEach((p, i) => feed.append(postNode(p, i)));
 }
 
-function card(p, i) {
-  const a = el("a", "card");
-  a.href = `/api/go?r=${encodeURIComponent(p.retailer)}&q=${encodeURIComponent(p.query)}`;
+function postNode(p, i) {
+  const wrap = el("article", "post");
+  wrap.style.animationDelay = `${Math.min(i, 6) * 60}ms`;
+
+  wrap.append(el("span", "when", ago(p.createdAt)));
+  if (p.note) wrap.append(el("p", "bubble", p.note));
+
+  const a = el("a", "item");
+  a.href = `/api/go?id=${encodeURIComponent(p.id)}`;
   a.target = "_blank";
   a.rel = "noopener sponsored";
-  a.style.animationDelay = `${i * 70}ms`;
+  a.addEventListener("click", (e) => burst(e.clientX, e.clientY));
 
-  const sw = el("div", "swatch");
-  sw.style.setProperty("--c", p.color);
-  sw.style.setProperty("--fg", isLight(p.color) ? "#0b0b0a" : "#f2ede4");
-  sw.append(el("span", "num", String(i + 1).padStart(2, "0")), el("span", "name", p.name));
+  const pic = el("div", "pic");
+  if (p.image) {
+    const img = el("img");
+    img.src = p.image;
+    img.alt = p.title;
+    img.loading = "lazy";
+    img.referrerPolicy = "no-referrer";
+    img.onerror = () => img.replaceWith(el("div", "fallback", p.title));
+    pic.append(img);
+  } else {
+    pic.append(el("div", "fallback", p.title));
+  }
+  pic.append(el("span", "tag", `${p.type === "makeup" ? "💄" : "👗"} ${p.store}`));
+  if (p.price) pic.append(el("span", "price", p.price));
 
-  const meta = el("div", "meta");
-  const row = el("div", "row");
-  row.append(el("span", "store", p.retailerName), el("span", "price", p.price));
-  const shop = el("span", "shop", "Shop it");
-  shop.append(el("span", "", "→"));
-  meta.append(row, el("p", "why", p.why), shop);
+  const heart = el("button", "heart" + (hearts.has(p.id) ? " on" : ""), hearts.has(p.id) ? "♥" : "♡");
+  heart.type = "button";
+  heart.setAttribute("aria-label", "Save");
+  heart.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const on = !hearts.has(p.id);
+    on ? hearts.add(p.id) : hearts.delete(p.id);
+    heart.textContent = on ? "♥" : "♡";
+    heart.classList.toggle("on", on);
+    if (on) burst(e.clientX, e.clientY);
+    try { localStorage.setItem("hearts", JSON.stringify([...hearts])); } catch {}
+  });
+  pic.append(heart);
 
-  a.append(sw, meta);
-  return a;
+  const info = el("div", "info");
+  info.append(el("h3", "", p.title), el("span", "get", "Get it ♡"));
+
+  a.append(pic, info);
+  wrap.append(a);
+  return wrap;
 }
 
-function loadingNode() {
-  const n = el("div", "msg bot");
-  const dots = el("div", "typing");
-  dots.append(el("i"), el("i"), el("i"));
-  const rail = el("div", "rail");
-  for (let i = 0; i < 3; i++) rail.append(el("div", "ghost"));
-  n.append(dots, rail);
-  return n;
+function burst(x, y) {
+  const glyphs = ["✦", "♡", "✧", "♥"];
+  for (let i = 0; i < 8; i++) {
+    const s = el("span", "spark", glyphs[i % glyphs.length]);
+    const ang = (Math.PI * 2 * i) / 8;
+    s.style.left = `${x}px`;
+    s.style.top = `${y}px`;
+    s.style.setProperty("--dx", `${Math.cos(ang) * 60}px`);
+    s.style.setProperty("--dy", `${Math.sin(ang) * 60}px`);
+    document.body.append(s);
+    setTimeout(() => s.remove(), 850);
+  }
 }
 
-function isLight(hex) {
-  let h = hex.replace("#", "");
-  if (h.length === 3) h = [...h].map((c) => c + c).join("");
-  const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
-  return 0.299 * r + 0.587 * g + 0.114 * b > 150;
+function ago(t) {
+  const m = Math.round((Date.now() - t) / 60000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.round(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.round(h / 24);
+  return d < 7 ? `${d}d ago` : new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function el(tag, cls = "", text) {
@@ -116,14 +119,4 @@ function el(tag, cls = "", text) {
   if (cls) n.className = cls;
   if (text != null) n.textContent = text;
   return n;
-}
-
-function add(node) {
-  feed.append(node);
-  scrollDown();
-  return node;
-}
-
-function scrollDown() {
-  requestAnimationFrame(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }));
 }

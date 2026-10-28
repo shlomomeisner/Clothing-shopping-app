@@ -3,10 +3,11 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { extname, join, normalize } from "node:path";
-import chat from "./api/chat.js";
+import posts from "./api/posts.js";
 import go from "./api/go.js";
+import preview from "./api/preview.js";
 
-const routes = { "/api/chat": chat, "/api/go": go };
+const routes = { "/api/posts": posts, "/api/go": go, "/api/preview": preview };
 const types = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png" };
 const PUBLIC = new URL("./public/", import.meta.url).pathname;
 
@@ -26,7 +27,7 @@ http
       return routes[pathname](req, res);
     }
 
-    const file = normalize(join(PUBLIC, pathname === "/" ? "index.html" : pathname));
+    const file = normalize(join(PUBLIC, pathname === "/" ? "index.html" : pathname === "/admin" ? "admin.html" : pathname));
     if (!file.startsWith(PUBLIC)) return res.status(403).end();
     try {
       const body = await readFile(file);
@@ -36,4 +37,4 @@ http
       res.status(404).end("Not found");
     }
   })
-  .listen(process.env.PORT || 3000, () => console.log(`Rack running on http://localhost:${process.env.PORT || 3000}`));
+  .listen(process.env.PORT || 3000, () => console.log(`swoon running on http://localhost:${process.env.PORT || 3000}`));

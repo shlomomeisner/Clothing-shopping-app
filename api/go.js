@@ -1,20 +1,17 @@
-import { RETAILERS } from "../lib/retailers.js";
+import { getPost, countClick } from "../lib/db.js";
 import { toAffiliateUrl } from "../lib/affiliate.js";
 
-// GET /api/go?r=<retailer>&q=<search query>
-// Logs the click, then redirects to the retailer through the affiliate link.
-export default function handler(req, res) {
-  const url = new URL(req.url, "http://x");
-  const retailer = RETAILERS[url.searchParams.get("r")];
-  const q = (url.searchParams.get("q") || "").slice(0, 200);
+// GET /api/go?id=<post id>
+// Counts the tap, then sends the shopper to the store through your affiliate link.
+export default async function handler(req, res) {
+  const id = new URL(req.url, "http://x").searchParams.get("id");
+  const post = id && (await getPost(id));
+  if (!post) return res.status(404).send("That item isn't here anymore");
 
-  if (!retailer || !q) return res.status(400).send("Bad link");
-
-  const target = toAffiliateUrl(retailer.url(q));
-  console.log(JSON.stringify({ event: "click", retailer: url.searchParams.get("r"), q, at: new Date().toISOString() }));
+  await countClick(id).catch((e) => console.error(e));
 
   res.statusCode = 302;
-  res.setHeader("Location", target);
+  res.setHeader("Location", toAffiliateUrl(post.url));
   res.setHeader("Cache-Control", "no-store");
   res.end();
 }

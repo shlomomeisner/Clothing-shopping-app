@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Rack: an AI stylist chat that recommends clothing and earns affiliate commission on purchases.",
+  "description": "swoon: a shopping feed of hand-picked outfits and makeup that earns affiliate commission.",
   "scripts": {
     "dev": "node --env-file-if-exists=.env server.js"
   },
