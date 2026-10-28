@@ -1,18 +1,18 @@
-# swoon ✦
+# Swoon
 
-A shopping feed of hand-picked outfits and makeup. You post the finds, people tap **Get it ♡**, and when they buy you earn the commission.
+An editorial shop of hand-picked outfits and makeup. You post the finds, people tap **Shop**, and when they buy you earn the commission.
 
 ```
 you (/admin) ── paste a product link ──► post shows up in the feed
-                                               │  shopper taps "Get it"
+                                               │  shopper taps "Shop"
                                                ▼
                                    /api/go ── counts the tap ──► your affiliate link ──► ASOS / Zara / Sephora / Ulta
 ```
 
 ## Pages
 
-- `/` — the feed shoppers see. Filter by All / Outfits / Makeup, save favorites with ♡.
-- `/admin` — where you post. Paste a link, tap **Grab photo & details** (fills in the name, photo and price when the store allows it), add a caption, post. It also shows how many taps each item got.
+- `/` — the feed shoppers see. Filter by All / Ready-to-wear / Beauty, save favorites with the heart.
+- `/admin` — where you post. Paste a link, tap **Fetch details from link** (fills in the name, photo and price when the store allows it), add a note, publish. It also shows how many taps each item got.
 
 ## Files
 
@@ -37,7 +37,7 @@ No dependencies to install. Needs Node 20+.
 1. Import this repo at vercel.com/new.
 2. In the Vercel project, open **Storage** and add **Upstash Redis**. That connects the database automatically.
 3. Under **Settings → Environment Variables**, add `ADMIN_PASSWORD`, plus your affiliate IDs once approved.
-4. Redeploy. Post your first drop at `yoursite.vercel.app/admin`.
+4. Redeploy. Publish your first piece at `yoursite.vercel.app/admin`.
 
 ## Getting paid
 

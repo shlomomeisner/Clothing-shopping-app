@@ -32,7 +32,7 @@ function render() {
 
   if (!list.length) {
     const e = el("div", "empty");
-    e.append(el("b", "", "nothing here yet ♡"), document.createTextNode("New drops are coming, check back soon."));
+    e.append(el("b", "", "The edit is being curated."), document.createTextNode("New pieces arrive soon."));
     feed.append(e);
     return;
   }
@@ -40,78 +40,53 @@ function render() {
 }
 
 function postNode(p, i) {
-  const wrap = el("article", "post");
-  wrap.style.animationDelay = `${Math.min(i, 6) * 60}ms`;
-
-  wrap.append(el("span", "when", ago(p.createdAt)));
-  if (p.note) wrap.append(el("p", "bubble", p.note));
+  const wrap = el("article", i === 0 ? "post feature" : "post");
+  wrap.style.animationDelay = `${Math.min(i, 8) * 70}ms`;
 
   const a = el("a", "item");
   a.href = `/api/go?id=${encodeURIComponent(p.id)}`;
   a.target = "_blank";
   a.rel = "noopener sponsored";
-  a.addEventListener("click", (e) => burst(e.clientX, e.clientY));
 
   const pic = el("div", "pic");
   if (p.image) {
     const img = el("img");
     img.src = p.image;
     img.alt = p.title;
-    img.loading = "lazy";
+    img.loading = i < 3 ? "eager" : "lazy";
     img.referrerPolicy = "no-referrer";
     img.onerror = () => img.replaceWith(el("div", "fallback", p.title));
     pic.append(img);
   } else {
     pic.append(el("div", "fallback", p.title));
   }
-  pic.append(el("span", "tag", `${p.type === "makeup" ? "💄" : "👗"} ${p.store}`));
-  if (p.price) pic.append(el("span", "price", p.price));
-
-  const heart = el("button", "heart" + (hearts.has(p.id) ? " on" : ""), hearts.has(p.id) ? "♥" : "♡");
-  heart.type = "button";
-  heart.setAttribute("aria-label", "Save");
-  heart.addEventListener("click", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const on = !hearts.has(p.id);
-    on ? hearts.add(p.id) : hearts.delete(p.id);
-    heart.textContent = on ? "♥" : "♡";
-    heart.classList.toggle("on", on);
-    if (on) burst(e.clientX, e.clientY);
-    try { localStorage.setItem("hearts", JSON.stringify([...hearts])); } catch {}
-  });
-  pic.append(heart);
+  pic.append(heartButton(p.id));
 
   const info = el("div", "info");
-  info.append(el("h3", "", p.title), el("span", "get", "Get it ♡"));
+  info.append(el("p", "store", p.store), el("h3", "", p.title));
+  if (p.price) info.append(el("p", "price", p.price));
+  if (p.note) info.append(el("p", "note", `“${p.note}”`));
+  info.append(el("span", "shop", i === 0 ? "Shop the piece" : "Shop"));
 
   a.append(pic, info);
   wrap.append(a);
   return wrap;
 }
 
-function burst(x, y) {
-  const glyphs = ["✦", "♡", "✧", "♥"];
-  for (let i = 0; i < 8; i++) {
-    const s = el("span", "spark", glyphs[i % glyphs.length]);
-    const ang = (Math.PI * 2 * i) / 8;
-    s.style.left = `${x}px`;
-    s.style.top = `${y}px`;
-    s.style.setProperty("--dx", `${Math.cos(ang) * 60}px`);
-    s.style.setProperty("--dy", `${Math.sin(ang) * 60}px`);
-    document.body.append(s);
-    setTimeout(() => s.remove(), 850);
-  }
-}
-
-function ago(t) {
-  const m = Math.round((Date.now() - t) / 60000);
-  if (m < 1) return "just now";
-  if (m < 60) return `${m}m ago`;
-  const h = Math.round(m / 60);
-  if (h < 24) return `${h}h ago`;
-  const d = Math.round(h / 24);
-  return d < 7 ? `${d}d ago` : new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+function heartButton(id) {
+  const b = el("button", "heart" + (hearts.has(id) ? " on" : ""));
+  b.type = "button";
+  b.setAttribute("aria-label", "Save");
+  b.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>';
+  b.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const on = !hearts.has(id);
+    on ? hearts.add(id) : hearts.delete(id);
+    b.classList.toggle("on", on);
+    try { localStorage.setItem("hearts", JSON.stringify([...hearts])); } catch {}
+  });
+  return b;
 }
 
 function el(tag, cls = "", text) {

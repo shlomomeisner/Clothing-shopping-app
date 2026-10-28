@@ -4,64 +4,64 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="robots" content="noindex" />
-  <meta name="theme-color" content="#ffe6ef" />
-  <title>swoon ✦ post a drop</title>
+  <meta name="theme-color" content="#f7f3ee" />
+  <title>Swoon — Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,400..900,100;1,9..144,400..900,100&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .panel { background: rgba(255,255,255,.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 28px; padding: 22px; box-shadow: 0 18px 40px rgba(255,61,139,.14); margin-bottom: 22px; }
-    .panel h2 { font: italic 800 28px/1 var(--serif); font-variation-settings: "SOFT" 100; margin-bottom: 16px; }
-    label { display: block; font-weight: 700; font-size: 13px; margin: 14px 0 6px; }
-    input, textarea, select { width: 100%; border: 1.5px solid var(--line); background: #fff; border-radius: 16px; padding: 13px 14px; font-size: 16px; outline: 0; }
-    input:focus, textarea:focus, select:focus { border-color: var(--pink); }
-    textarea { resize: vertical; min-height: 70px; }
-    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .btn { width: 100%; border: 0; margin-top: 18px; padding: 15px; border-radius: 99px; font-weight: 800; font-size: 16px; color: #fff; background: linear-gradient(135deg, var(--pink), #ff6fb0); box-shadow: 0 8px 20px rgba(255,61,139,.35); }
-    .btn.soft { background: var(--ink); box-shadow: none; margin-top: 10px; }
-    .btn:disabled { opacity: .5; }
-    .msg { margin-top: 12px; font-weight: 700; font-size: 14px; min-height: 1em; }
-    .msg.bad { color: #d6245d; }
-    .mine { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+    .wrap { max-width: 560px; }
+    .panel { border: 1px solid var(--line); background: #fbf8f4; padding: 28px 22px; margin-bottom: 24px; }
+    .panel h2 { font: italic 400 28px/1.1 var(--serif); margin-bottom: 18px; }
+    label { display: block; font: 400 10px/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin: 20px 0 8px; }
+    input, textarea, select { width: 100%; border: 0; border-bottom: 1px solid var(--line); background: transparent; border-radius: 0; padding: 10px 0; font: 300 16px/1.4 var(--sans); outline: 0; -webkit-appearance: none; appearance: none; }
+    input:focus, textarea:focus, select:focus { border-bottom-color: var(--ink); }
+    textarea { resize: vertical; min-height: 64px; font-family: var(--serif); font-style: italic; }
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .btn { width: 100%; border: 1px solid var(--ink); margin-top: 26px; padding: 16px; border-radius: 0; background: var(--ink); color: var(--bg); font: 400 11px/1 var(--sans); letter-spacing: .24em; text-transform: uppercase; transition: opacity .3s; }
+    .btn.soft { background: transparent; color: var(--ink); margin-top: 14px; }
+    .btn:disabled { opacity: .45; }
+    .msg { margin-top: 14px; font: italic 400 14px/1.4 var(--serif); min-height: 1em; }
+    .msg.bad { color: #9b3b2e; }
+    .mine { display: flex; align-items: center; gap: 14px; padding: 14px 0; border-top: 1px solid var(--line); }
     .mine:first-of-type { border-top: 0; }
-    .mine .th { width: 54px; height: 66px; border-radius: 12px; object-fit: cover; background: linear-gradient(150deg, #ffd9e7, #e9dcff); flex: none; }
+    .mine .th { width: 52px; height: 68px; object-fit: cover; background: var(--paper); flex: none; }
     .mine .t { flex: 1; min-width: 0; }
-    .mine .t b { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .mine .t span { font-size: 12px; color: var(--muted); font-weight: 600; }
-    .taps { font: 800 18px/1 var(--sans); color: var(--pink); text-align: center; }
-    .taps small { display: block; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 3px; }
-    .del { border: 0; background: #ffe3ee; color: #d6245d; width: 34px; height: 34px; border-radius: 50%; font-weight: 800; flex: none; }
-    .total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-    .total b { font: 800 34px/1 var(--serif); color: var(--pink); }
+    .mine .t b { display: block; font: 400 16px/1.3 var(--serif); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mine .t span { font: 400 10px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .taps { font: 400 20px/1 var(--serif); text-align: center; }
+    .taps small { display: block; font: 400 9px/1 var(--sans); color: var(--muted); text-transform: uppercase; letter-spacing: .18em; margin-top: 4px; }
+    .del { border: 1px solid var(--line); background: none; color: var(--muted); width: 32px; height: 32px; border-radius: 50%; flex: none; font-size: 12px; }
+    .total { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .total span { font: 400 10px/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+    .total b { font: 400 30px/1 var(--serif); color: var(--ink); letter-spacing: 0; margin-right: 4px; }
   </style>
 </head>
 <body>
-  <div class="blobs" aria-hidden="true"><i></i><i></i><i></i></div>
-
   <header class="top">
-    <a class="mark" href="/">swoon<span>✦</span></a>
-    <span class="live">admin</span>
+    <p class="strip">Studio</p>
+    <a class="mark" href="/">Swoon</a>
   </header>
 
   <main class="wrap" style="padding-top: 22px">
     <section class="panel" id="login">
-      <h2>hey bestie ♡</h2>
+      <h2>Welcome back.</h2>
       <form id="loginForm">
         <label for="pw">Password</label>
         <input id="pw" type="password" autocomplete="current-password" required />
-        <button class="btn">Let me in</button>
+        <button class="btn">Enter</button>
         <p class="msg bad" id="loginMsg"></p>
       </form>
     </section>
 
     <div id="app" hidden>
       <section class="panel">
-        <h2>post a drop ✦</h2>
+        <h2>New piece</h2>
         <form id="postForm">
           <label for="url">Product link</label>
           <input id="url" type="url" placeholder="https://www.asos.com/…" required />
-          <button type="button" class="btn soft" id="grab">✨ Grab photo &amp; details</button>
+          <button type="button" class="btn soft" id="grab">Fetch details from link</button>
 
           <label for="title">Name</label>
           <input id="title" placeholder="Satin slip dress" required maxlength="120" />
@@ -73,23 +73,23 @@
             </div>
             <div>
               <label for="type">Type</label>
-              <select id="type"><option value="outfit">👗 Outfit</option><option value="makeup">💄 Makeup</option></select>
+              <select id="type"><option value="outfit">Ready-to-wear</option><option value="makeup">Beauty</option></select>
             </div>
           </div>
 
           <label for="image">Photo link</label>
           <input id="image" type="url" placeholder="Auto-fills, or paste the product photo link" />
 
-          <label for="note">Your caption</label>
-          <textarea id="note" maxlength="280" placeholder="literally obsessed with this for date night 😍"></textarea>
+          <label for="note">Your note</label>
+          <textarea id="note" maxlength="280" placeholder="The slip dress I keep coming back to."></textarea>
 
-          <button class="btn" id="postBtn">Post it ♡</button>
+          <button class="btn" id="postBtn">Publish</button>
           <p class="msg" id="postMsg"></p>
         </form>
       </section>
 
       <section class="panel">
-        <div class="total"><h2 style="margin:0">your drops</h2><span><b id="totalTaps">0</b> taps</span></div>
+        <div class="total"><h2 style="margin:0">Published</h2><span><b id="totalTaps">0</b> taps</span></div>
         <div id="mine"></div>
       </section>
     </div>
@@ -128,7 +128,7 @@
       const url = $("url").value.trim();
       if (!url) return $("url").focus();
       $("grab").disabled = true;
-      $("grab").textContent = "grabbing…";
+      $("grab").textContent = "Fetching…";
       try {
         const d = await api("/api/preview", { method: "POST", body: JSON.stringify({ url }) });
         if (d.title && !$("title").value) $("title").value = d.title;
@@ -136,13 +136,13 @@
         if (d.image && !$("image").value) $("image").value = d.image;
         if (/sephora|ulta/i.test(url)) $("type").value = "makeup";
         $("postMsg").className = "msg";
-        $("postMsg").textContent = d.title || d.image ? "Got it ✨ check the details" : "That store didn't share details, fill them in by hand";
+        $("postMsg").textContent = d.title || d.image ? "Details added. Please review." : "This store doesn't share details. Please add them by hand.";
       } catch (e) {
         $("postMsg").className = "msg bad";
         $("postMsg").textContent = e.message;
       }
       $("grab").disabled = false;
-      $("grab").textContent = "✨ Grab photo & details";
+      $("grab").textContent = "Fetch details from link";
     };
 
     $("postForm").onsubmit = async (e) => {
@@ -155,7 +155,7 @@
         });
         $("postForm").reset();
         $("postMsg").className = "msg";
-        $("postMsg").textContent = "Posted ♡ it's live";
+        $("postMsg").textContent = "Published.";
         const { posts } = await api("/api/posts?stats=1");
         renderMine(posts);
       } catch (e) {
@@ -169,7 +169,7 @@
       const box = $("mine");
       box.replaceChildren();
       $("totalTaps").textContent = posts.reduce((s, p) => s + p.clicks, 0);
-      if (!posts.length) { box.textContent = "Nothing posted yet."; return; }
+      if (!posts.length) { box.textContent = "Nothing published yet."; return; }
       for (const p of posts) {
         const row = document.createElement("div");
         row.className = "mine";
@@ -185,7 +185,7 @@
         taps.className = "taps";
         taps.innerHTML = `${p.clicks}<small>taps</small>`;
         const del = document.createElement("button");
-        del.className = "del"; del.textContent = "✕"; del.title = "Delete";
+        del.className = "del"; del.textContent = "×"; del.title = "Delete";
         del.onclick = async () => {
           if (!confirm(`Delete "${p.title}"?`)) return;
           await api(`/api/posts?id=${encodeURIComponent(p.id)}`, { method: "DELETE" });
