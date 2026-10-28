@@ -1,51 +1,69 @@
 # Swoon
 
-An editorial shop of hand-picked outfits and makeup. You post the finds, people tap **Shop**, and when they buy you earn the commission.
+Shop what people are wearing. Anyone can sign up, post outfit photos throughout the day, and tag every piece in the look. Viewers scroll a full-screen feed, tap **Shop the look**, and buy straight from the store. Every buy link runs through your affiliate account, so you earn the commission.
 
 ```
-you (/admin) ── paste a product link ──► post shows up in the feed
-                                               │  shopper taps "Shop"
-                                               ▼
-                                   /api/go ── counts the tap ──► your affiliate link ──► ASOS / Zara / Sephora / Ulta
+creator ── posts a photo + tags items (links to ASOS, Zara, Sephora, Ulta…)
+                    │
+                    ▼
+        full-screen feed, newest first
+                    │  viewer taps "Shop the look" → an item
+                    ▼
+/api/go ── counts the tap ──► affiliate link (tagged with the creator) ──► store
 ```
 
 ## Pages
 
-- `/` — the feed shoppers see. Filter by All / Ready-to-wear / Beauty, save favorites with the heart.
-- `/admin` — where you post. Paste a link, tap **Fetch details from link** (fills in the name, photo and price when the store allows it), add a note, publish. It also shows how many taps each item got.
+| Page | What it is |
+| --- | --- |
+| `/` | The feed. One look per screen, swipe up for the next. Save, share, report. |
+| `/login` | Sign up or log in (username + password). |
+| `/post` | New look: add a photo from the phone, a caption, and links to each item. |
+| `/@username` | A creator's profile: their looks in a grid. On your own profile you also see shop taps per look and can delete looks. |
 
-## Files
+## How the money works
 
-- `public/` — the site (plain HTML/CSS/JS, no build step)
-- `api/posts.js` — list, create and delete posts
-- `api/go.js` — counts the tap and redirects through the affiliate link
-- `api/preview.js` — reads a product page's title, photo and price
-- `lib/affiliate.js` — turns store links into commission links
-- `lib/db.js` — storage (Upstash Redis on Vercel, a local file in dev)
-
-## Run it locally
-
-```bash
-cp .env.example .env   # set ADMIN_PASSWORD
-npm run dev            # http://localhost:3000 and /admin
-```
-
-No dependencies to install. Needs Node 20+.
+- Buy links use **your** affiliate IDs (`SKIMLINKS_ID`, `AMAZON_TAG`). You earn on every sale from every creator.
+- Each link is tagged with the creator's username (Skimlinks `xcust`), so your Skimlinks reports show which creator drove each sale. That's what you'll use if you pay creators a share later.
+- Until the IDs are set, links still work but go straight to the store and earn nothing.
+- Whether a store pays, and how much, depends on that store's program in the network. Check ASOS, Zara, Sephora and Ulta once you're approved.
+- Keep the commission disclosure visible. The FTC requires it.
 
 ## Go live
 
 1. Import this repo at vercel.com/new.
-2. In the Vercel project, open **Storage** and add **Upstash Redis**. That connects the database automatically.
+2. In the Vercel project, open **Storage** and add **Upstash Redis**. It connects automatically.
 3. Under **Settings → Environment Variables**, add `ADMIN_PASSWORD`, plus your affiliate IDs once approved.
-4. Redeploy. Publish your first piece at `yoursite.vercel.app/admin`.
+4. Redeploy, open the site, and sign up.
 
-## Getting paid
+## Run it locally
 
-| Variable | Where to get it |
-| --- | --- |
-| `SKIMLINKS_ID` | Apply for a Skimlinks publisher account. It converts links for thousands of stores at once. |
-| `AMAZON_TAG` | Amazon Associates, if you ever post Amazon items |
+```bash
+npm run dev    # http://localhost:3000
+```
 
-Until these are set, links still work but go straight to the store and earn nothing. Commission rates, and whether a given store (ASOS, Zara, Sephora, Ulta) pays, depend on each store's program in the network. Check this once you're approved. Some stores also run their own programs on Rakuten, Impact or Awin.
+No dependencies to install. Needs Node 20+. Data saves to `data/kv.json`.
 
-Keep the "We may earn a commission" line visible. The FTC requires that disclosure.
+## Moderation
+
+Anyone can report a post from its ••• menu. To review reports and remove posts, call the API with your owner password in the `x-admin-password` header:
+
+- `GET /api/report` lists reported posts
+- `DELETE /api/posts?id=<post id>` removes any post
+
+## Code
+
+- `public/` — the pages (plain HTML/CSS/JS, no build step). `common.js` holds shared helpers.
+- `api/auth.js` — sign up, log in, log out (passwords hashed with scrypt, httpOnly session cookie)
+- `api/posts.js` — feed, profiles, create and delete looks
+- `api/img.js` — serves photos (cached forever by the CDN)
+- `api/go.js` — counts the tap, redirects through the affiliate link
+- `api/preview.js` — fills in an item's name and price from its link, when the store allows it
+- `api/report.js` — report a post; list reports
+- `lib/db.js` — Upstash Redis, with a local stand-in for development
+
+## Known limits of this first version
+
+- Photos are stored in Redis, about 200–400 KB each. Upstash's free tier fits roughly a thousand looks. Moving photos to Vercel Blob or S3 is the next step after that.
+- No following, likes count, comments, or password reset yet.
+- No in-app review queue for reports yet (API only).

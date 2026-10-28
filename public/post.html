@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f3ee" />
+  <title>New post — Swoon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="icon-btn" href="/" aria-label="Close" id="closeBtn"></a>
+    <p class="title">New look</p>
+    <span></span>
+  </header>
+
+  <main class="page">
+    <label class="picker" id="picker">
+      <input type="file" id="file" accept="image/*" hidden />
+      <span id="pickIcon"></span>
+      <span class="caps">Add a photo</span>
+    </label>
+
+    <label class="f"><span>Caption</span><textarea id="caption" maxlength="500" placeholder="Brunch in the city, keeping it easy."></textarea></label>
+
+    <div class="section-h"><h2>What you're wearing</h2><small id="count">0 items</small></div>
+    <div class="tagged" id="tagged"></div>
+
+    <div class="adder">
+      <label class="f"><span>Link to the item</span><input id="url" type="url" inputmode="url" autocapitalize="none" placeholder="Paste from ASOS, Zara, Sephora…" /></label>
+      <button type="button" class="fetch" id="fetch">Fill in from link</button>
+      <div class="two">
+        <label class="f"><span>Name</span><input id="title" maxlength="100" placeholder="Linen shirt" /></label>
+        <label class="f"><span>Price</span><input id="price" maxlength="20" placeholder="$49" /></label>
+      </div>
+      <button type="button" class="btn ghost block" id="add" style="margin-top:22px">Add item</button>
+    </div>
+
+    <p class="msg bad" id="msg"></p>
+    <div class="publish-bar"><button class="btn block" id="publish">Share look</button></div>
+  </main>
+
+  <script type="module">
+    import { api, me, el, svg } from "/common.js";
+    const $ = (id) => document.getElementById(id);
+    $("closeBtn").append(svg("close"));
+    $("pickIcon").append(svg("camera"));
+
+    if (!(await me())) location.replace("/login?next=/post");
+
+    let photo = null;
+    const items = [];
+
+    // Shrink photos on the phone before upload: 1080px wide is plenty for the feed.
+    $("file").addEventListener("change", async () => {
+      const f = $("file").files[0];
+      if (!f) return;
+      $("msg").textContent = "";
+      try {
+        photo = await shrink(f);
+        $("picker").querySelectorAll("img,.change").forEach((n) => n.remove());
+        const img = el("img");
+        img.src = photo;
+        $("picker").append(img, el("span", "change caps", "Change"));
+      } catch {
+        $("msg").textContent = "Couldn't read that photo. Try another one.";
+      }
+    });
+
+    async function shrink(file) {
+      const bmp = await createImageBitmap(file, { imageOrientation: "from-image" }).catch(async () => {
+        const img = new Image();
+        img.src = URL.createObjectURL(file);
+        await img.decode();
+        return img;
+      });
+      const scale = Math.min(1, 1080 / bmp.width, 1440 / bmp.height);
+      const c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * scale);
+      c.height = Math.round(bmp.height * scale);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      for (const q of [0.82, 0.72, 0.6, 0.5]) {
+        const url = c.toDataURL("image/jpeg", q);
+        if (url.length < 1_100_000) return url;
+      }
+      return c.toDataURL("image/jpeg", 0.4);
+    }
+
+    $("fetch").addEventListener("click", async () => {
+      const url = $("url").value.trim();
+      if (!url) return $("url").focus();
+      $("fetch").disabled = true;
+      $("fetch").textContent = "Looking…";
+      try {
+        const d = await api("/api/preview", { method: "POST", data: { url } });
+        if (d.title) $("title").value = d.title;
+        if (d.price) $("price").value = d.price;
+        $("msg").textContent = d.title ? "" : "That store didn't share details. Add the name and price.";
+      } catch (e) {
+        $("msg").textContent = e.message;
+      }
+      $("fetch").disabled = false;
+      $("fetch").textContent = "Fill in from link";
+    });
+
+    $("add").addEventListener("click", () => {
+      const url = $("url").value.trim();
+      const title = $("title").value.trim();
+      if (!/^https:\/\//.test(url)) return ($("msg").textContent = "Paste the item's link (starts with https://)");
+      if (!title) return ($("msg").textContent = "Give the item a name");
+      if (items.length >= 10) return ($("msg").textContent = "Up to 10 items per look");
+      items.push({ url, title, price: $("price").value.trim() });
+      $("url").value = $("title").value = $("price").value = "";
+      $("msg").textContent = "";
+      renderItems();
+    });
+
+    function renderItems() {
+      const box = $("tagged");
+      box.replaceChildren();
+      items.forEach((it, i) => {
+        const row = el("div", "row");
+        const t = el("div", "t");
+        let store = "";
+        try { store = new URL(it.url).hostname.replace(/^www\d*\./, ""); } catch {}
+        store = { "asos.com": "ASOS", "zara.com": "Zara", "sephora.com": "Sephora", "ulta.com": "Ulta" }[store] || store;
+        t.append(el("small", "", store), el("b", "", it.title));
+        if (it.price) t.append(el("span", "", it.price));
+        const x = el("button", "x");
+        x.setAttribute("aria-label", "Remove");
+        x.append(svg("close"));
+        x.addEventListener("click", () => { items.splice(i, 1); renderItems(); });
+        row.append(el("span", "n", String(i + 1).padStart(2, "0")), t, x);
+        box.append(row);
+      });
+      $("count").textContent = `${items.length} item${items.length === 1 ? "" : "s"}`;
+    }
+
+    $("publish").addEventListener("click", async () => {
+      if (!photo) return ($("msg").textContent = "Add a photo first");
+      if (!items.length) return ($("msg").textContent = "Tag at least one item so people can shop it");
+      $("publish").disabled = true;
+      $("publish").textContent = "Sharing…";
+      try {
+        const { post } = await api("/api/posts", { method: "POST", data: { photo, caption: $("caption").value, items } });
+        location.href = `/?user=${encodeURIComponent(post.user.username)}#${post.id}`;
+      } catch (e) {
+        $("msg").textContent = e.status === 401 ? "Please log in again" : e.message;
+        $("publish").disabled = false;
+        $("publish").textContent = "Share look";
+      }
+    });
+  </script>
+</body>
+</html>

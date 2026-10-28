@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f3ee" />
+  <title>Join Swoon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="icon-btn" href="/" aria-label="Back" id="back"></a>
+    <a class="wordmark" href="/">Swoon</a>
+    <span></span>
+  </header>
+
+  <main class="page auth">
+    <p class="caps" style="text-align:center;color:var(--rose)">Shop what they're wearing</p>
+    <h1>Post your <em>look.</em></h1>
+    <p class="lede">Share outfits, tag every piece, and let people shop it straight from your photo.</p>
+
+    <div class="switch caps" id="switch">
+      <button class="on" data-mode="signup">Sign up</button>
+      <button data-mode="login">Log in</button>
+    </div>
+
+    <form id="form" novalidate>
+      <label class="f" id="nameField"><span>Your name</span><input id="name" autocomplete="name" maxlength="40" /></label>
+      <label class="f"><span>Username</span><input id="username" autocomplete="username" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="e.g. mia.styles" /></label>
+      <label class="f"><span>Password</span><input id="password" type="password" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" /></label>
+      <p class="msg bad" id="msg"></p>
+      <button class="btn block" id="go">Create account</button>
+    </form>
+  </main>
+
+  <script type="module">
+    import { api, svg } from "/common.js";
+    const $ = (id) => document.getElementById(id);
+    $("back").append(svg("back"));
+
+    let mode = "signup";
+    $("switch").addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      mode = b.dataset.mode;
+      $("switch").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+      $("nameField").hidden = mode === "login";
+      $("go").textContent = mode === "login" ? "Log in" : "Create account";
+      $("password").autocomplete = mode === "login" ? "current-password" : "new-password";
+      $("msg").textContent = "";
+    });
+
+    $("form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      $("go").disabled = true;
+      $("msg").textContent = "";
+      try {
+        await api("/api/auth", { method: "POST", data: { action: mode, name: $("name").value, username: $("username").value, password: $("password").value } });
+        const next = new URLSearchParams(location.search).get("next");
+        location.href = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+      } catch (err) {
+        $("msg").textContent = err.message;
+        $("go").disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

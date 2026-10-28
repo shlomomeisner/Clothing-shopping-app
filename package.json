@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "swoon: a shopping feed of hand-picked outfits and makeup that earns affiliate commission.",
+  "description": "Swoon: anyone posts outfit photos, tags the pieces, and people shop them through affiliate links.",
   "scripts": {
     "dev": "node --env-file-if-exists=.env server.js"
   },

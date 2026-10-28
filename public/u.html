@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7f3ee" />
+  <title>Swoon</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="top">
+    <a class="icon-btn" href="/" aria-label="Back to feed" id="back"></a>
+    <a class="wordmark" href="/">Swoon</a>
+    <span></span>
+  </header>
+
+  <section class="profile-head" id="head"></section>
+  <section class="grid3" id="grid"></section>
+
+  <script type="module">
+    import { api, el, avatar, svg, toast } from "/common.js";
+    const $ = (id) => document.getElementById(id);
+    $("back").append(svg("back"));
+
+    const username = decodeURIComponent(location.pathname.replace(/^\/@/, "").replace(/\/$/, "")).toLowerCase();
+
+    load();
+
+    async function load() {
+      let data;
+      try {
+        data = await api(`/api/posts?user=${encodeURIComponent(username)}`);
+      } catch (e) {
+        const empty = el("div", "empty");
+        $("head").append(empty);
+        empty.append(el("b", "", "No one here."), document.createTextNode(e.status === 404 ? `There's no @${username} on Swoon.` : e.message));
+        return;
+      }
+      const { user, posts, total, mine } = data;
+      document.title = `${user.name} (@${user.username}) — Swoon`;
+
+      const head = $("head");
+      head.replaceChildren(avatar(user, "lg"), el("h1", "", user.name), el("p", "handle", `@${user.username}`));
+
+      const stats = el("div", "stats");
+      const stat = (n, label) => { const d = el("div"); d.append(el("b", "", String(n)), el("span", "", label)); return d; };
+      stats.append(stat(total, total === 1 ? "Look" : "Looks"));
+      if (mine) {
+        const taps = posts.reduce((s, p) => s + p.items.reduce((a, it) => a + (it.taps || 0), 0), 0);
+        stats.append(stat(taps, "Shop taps"));
+      }
+      head.append(stats);
+
+      if (mine) {
+        const actions = el("div", "profile-actions");
+        const post = el("a", "btn", "Post a look");
+        post.href = "/post";
+        const out = el("button", "btn ghost", "Log out");
+        out.addEventListener("click", async () => {
+          await api("/api/auth", { method: "POST", data: { action: "logout" } });
+          location.href = "/";
+        });
+        actions.append(post, out);
+        head.append(actions);
+      }
+
+      const grid = $("grid");
+      if (!posts.length) {
+        const e = el("div", "empty");
+        e.style.gridColumn = "1 / -1";
+        e.append(el("b", "", "No looks yet."), document.createTextNode(mine ? "Your first one is a tap away." : "Check back soon."));
+        grid.append(e);
+        return;
+      }
+      for (const p of posts) {
+        const a = el("a", "tile");
+        a.href = `/?user=${encodeURIComponent(user.username)}#${p.id}`;
+        const img = el("img");
+        img.src = p.photo;
+        img.alt = p.caption || "";
+        img.loading = "lazy";
+        a.append(img);
+        const count = el("span", "count");
+        count.append(svg("bag"), document.createTextNode(mine ? `${p.items.reduce((s, it) => s + (it.taps || 0), 0)} taps` : String(p.items.length)));
+        a.append(count);
+        if (mine) {
+          const del = el("button", "del");
+          del.setAttribute("aria-label", "Delete");
+          del.append(svg("close"));
+          del.addEventListener("click", async (e) => {
+            e.preventDefault();
+            if (!confirm("Delete this look?")) return;
+            try {
+              await api(`/api/posts?id=${encodeURIComponent(p.id)}`, { method: "DELETE" });
+              a.remove();
+              toast("Deleted");
+            } catch (err) { toast(err.message); }
+          });
+          a.append(del);
+        }
+        grid.append(a);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,11 +1,11 @@
-// POST /api/preview { url }  (admin)
+// POST /api/preview { url }  (signed in)
 // Best-effort: reads the product page's title, photo and price so you don't have to type them.
 // Some stores block this; then just fill the fields in by hand.
-import { isAdmin } from "../lib/auth.js";
+import { currentUser } from "../lib/users.js";
 
 export default async function handler(req, res) {
-  if (!isAdmin(req)) {
-    return res.status(401).json({ error: "Wrong password" });
+  if (!(await currentUser(req))) {
+    return res.status(401).json({ error: "Log in first" });
   }
   const b = typeof req.body === "string" ? JSON.parse(req.body || "{}") : req.body || {};
   let url;

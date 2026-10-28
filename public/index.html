@@ -3,41 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f7f3ee" />
-  <title>Swoon — The Edit</title>
+  <meta name="theme-color" content="#0e0c0b" />
+  <title>Swoon — shop what they're wearing</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Jost:wght@300;400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
-<body>
-  <header class="top">
-    <p class="strip">Hand-selected · Updated weekly</p>
-    <a class="mark" href="/">Swoon</a>
+<body class="feed-page">
+  <header class="bar">
+    <a class="wordmark" href="/">Swoon</a>
+    <div class="side" id="side"></div>
   </header>
 
-  <main class="wrap">
-    <section class="hero">
-      <p class="eyebrow">The Edit</p>
-      <h1>Pieces I'd <em>actually</em> wear.</h1>
-      <p class="sub">A considered selection of ready-to-wear from ASOS and Zara, and beauty from Sephora and Ulta.</p>
-    </section>
-
-    <nav class="tabs" id="tabs">
-      <button class="on" data-type="all">All</button>
-      <button data-type="outfit">Ready-to-wear</button>
-      <button data-type="makeup">Beauty</button>
-    </nav>
-
-    <section class="grid" id="feed" aria-live="polite">
-      <div class="ghost feature"></div><div class="ghost"></div><div class="ghost"></div>
-    </section>
+  <main class="reel" id="reel">
+    <section class="end loading"><p>Loading…</p></section>
   </main>
-
-  <footer class="foot">
-    <a class="mark small" href="/">Swoon</a>
-    <p>We may earn a commission when you shop through our links.</p>
-  </footer>
 
   <script src="/app.js" type="module"></script>
 </body>
